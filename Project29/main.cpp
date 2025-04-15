@@ -178,6 +178,19 @@ TEST(AutoTradingBotTest, DoNotBuyOnDownTrend) {
 	EXPECT_FALSE(bot.buyNiceTiming("ABC", 10000));
 }
 
+TEST(AutoTradingBotTest, SellCalledOnDownTrend2) {
+	MockDriver mock;
+
+	EXPECT_CALL(mock, getRecentPrices("XYZ"))
+		.WillOnce(Return(vector<int>{1500, 1400, 1300}));
+	EXPECT_CALL(mock, getStockPrice("XYZ")).WillOnce(Return(1300));
+	EXPECT_CALL(mock, sellStock("XYZ", 2, 1300)).Times(1);
+
+	AutoTradingSystem bot(&mock);
+	EXPECT_TRUE(bot.sellNiceTiming("XYZ", 2));
+
+}
+
 TEST(AutoTradingBotTest, SellCalledOnDownTrend) {
 	MockDriver mock;
 
