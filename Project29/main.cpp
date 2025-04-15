@@ -96,7 +96,7 @@ private:
 
 class AutoTradingSystem {
 public:
-	AutoTradingSystem() { }
+	AutoTradingSystem(StockBrocker* stockBrocker) : stockBrocker{ stockBrocker } {}
 
 	void selectStockBrocker(string name) {
 		if (name == "kiwer") stockBrocker = new KiwerDriver();
@@ -139,13 +139,27 @@ private:
 
 
 TEST(AutoTradingBotTest, BuyCalledOnUpTrend) {
+	MockDriver mock;
 
+	EXPECT_CALL(mock, getRecentPrices("ABC"))
+		.WillOnce(Return(vector<int>{1000, 1050, 1100}));
+	EXPECT_CALL(mock, getStockPrice("ABC")).WillOnce(Return(1100));
+	EXPECT_CALL(mock, buyStock("ABC", 1100, 9)).Times(1);
+
+	AutoTradingSystem bot(&mock);
+	EXPECT_TRUE(bot.buyNiceTiming("ABC", 10000));
 }
 
 TEST(AutoTradingBotTest, DoNotBuyOnDownTrend) {
+	MockDriver mock;
 
+	EXPECT_CALL(mock, getRecentPrices("ABC"))
+		.WillOnce(Return(vector<int>{1100, 1050, 1000}));
+	EXPECT_CALL(mock, buyStock).Times(0);
+
+	AutoTradingSystem bot(&mock);
+	EXPECT_FALSE(bot.buyNiceTiming("ABC", 10000));
 }
-
 
 int main() {
 	::testing::InitGoogleMock();
