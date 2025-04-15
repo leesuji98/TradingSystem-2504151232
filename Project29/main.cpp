@@ -118,12 +118,12 @@ public:
 		return false;
 	}
 
-	bool sellNiceTiming(std::string stockCode, int price) {
+	bool sellNiceTiming(std::string stockCode, int count) {
 		vector<int> prices = getRecentPrices(stockCode);
 
 		if (prices[2] < prices[1] && prices[1] < prices[0]) {
 			int currentPrice = getStockPrice(stockCode, 0);
-			sellStock(stockCode, 5, currentPrice);
+			sellStock(stockCode, count, currentPrice);
 			return true;
 		}
 
@@ -176,6 +176,19 @@ TEST(AutoTradingBotTest, DoNotBuyOnDownTrend) {
 
 	AutoTradingSystem bot(&mock);
 	EXPECT_FALSE(bot.buyNiceTiming("ABC", 10000));
+}
+
+TEST(AutoTradingBotTest, SellCalledOnDownTrend2) {
+	MockDriver mock;
+
+	EXPECT_CALL(mock, getRecentPrices("XYZ"))
+		.WillOnce(Return(vector<int>{1500, 1400, 1300}));
+	EXPECT_CALL(mock, getStockPrice("XYZ")).WillOnce(Return(1300));
+	EXPECT_CALL(mock, sellStock("XYZ", 2, 1300)).Times(1);
+
+	AutoTradingSystem bot(&mock);
+	EXPECT_TRUE(bot.sellNiceTiming("XYZ", 2));
+
 }
 
 TEST(AutoTradingBotTest, SellCalledOnDownTrend) {
