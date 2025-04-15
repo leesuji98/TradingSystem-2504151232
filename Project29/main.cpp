@@ -118,8 +118,16 @@ public:
 		return false;
 	}
 
-	void sellNiceTiming(std::string stockCode, int price) {
-//		stockBrocker->sellNiceTiming(stockCode, price);
+	bool sellNiceTiming(std::string stockCode, int price) {
+		vector<int> prices = getRecentPrices(stockCode);
+
+		if (prices[2] < prices[1] && prices[1] < prices[0]) {
+			int currentPrice = getStockPrice(stockCode, 0);
+			sellStock(stockCode, 5, currentPrice);
+			return true;
+		}
+
+		return false;
 	}
 
 	void loginSystem(std::string ID, std::string password) {
@@ -164,10 +172,36 @@ TEST(AutoTradingBotTest, DoNotBuyOnDownTrend) {
 
 	EXPECT_CALL(mock, getRecentPrices("ABC"))
 		.WillOnce(Return(vector<int>{1100, 1050, 1000}));
+	EXPECT_CALL(mock, buyStock).Times(0);
 
 	AutoTradingSystem bot(&mock);
 	EXPECT_FALSE(bot.buyNiceTiming("ABC", 10000));
 }
+
+TEST(AutoTradingBotTest, SellCalledOnDownTrend) {
+	MockDriver mock;
+
+	EXPECT_CALL(mock, getRecentPrices("XYZ"))
+		.WillOnce(Return(vector<int>{1500, 1400, 1300}));
+	EXPECT_CALL(mock, getStockPrice("XYZ")).WillOnce(Return(1300));
+	EXPECT_CALL(mock, sellStock("XYZ", 5, 1300)).Times(1);
+
+	AutoTradingSystem bot(&mock);
+	EXPECT_TRUE(bot.sellNiceTiming("XYZ", 5));
+
+}
+
+TEST(AutoTradingBotTest, DoNotSellOnUpTrend) {
+	MockDriver mock;
+
+	EXPECT_CALL(mock, getRecentPrices("XYZ"))
+		.WillOnce(Return(vector<int>{1300, 1400, 1500}));
+	EXPECT_CALL(mock, sellStock).Times(0);
+
+	AutoTradingSystem bot(&mock);
+	EXPECT_FALSE(bot.sellNiceTiming("XYZ", 5));
+}
+
 
 
 int main() {
