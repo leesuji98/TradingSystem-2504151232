@@ -49,7 +49,7 @@ public:
 		return kiwer.currentPrice(stockCode);
 	}
 	vector <int> getRecentPrices(string stockCode) override{
-		return kiwer.getRecentPrices(stockCode);
+		//return kiwer.getRecentPrices(stockCode);
 	}
 
 	string getName() {
@@ -86,7 +86,7 @@ public:
 	}
 
 	vector <int> getRecentPrices(string stockCode) override{
-		return nemo.getRecentPrices(stockCode);
+		//return nemo.getRecentPrices(stockCode);
 	}
 
 
@@ -105,8 +105,17 @@ public:
 		return ;
 	}
 
-	void buyNiceTiming(std::string stockCode, int price) {
-//		stockBrocker->buyNiceTiming(stockCode, price);
+	bool buyNiceTiming(std::string stockCode, int price) {
+
+		vector<int> prices = getRecentPrices(stockCode);
+
+		if (prices[2] > prices[1] && prices[1] > prices[0]) {
+			int currentPrice = getStockPrice(stockCode, 0);
+			buyStock(stockCode, static_cast<int>( (float)price / (float)currentPrice), currentPrice);
+			return true;
+		}
+
+		return false;
 	}
 
 	void sellNiceTiming(std::string stockCode, int price) {
@@ -144,7 +153,7 @@ TEST(AutoTradingBotTest, BuyCalledOnUpTrend) {
 	EXPECT_CALL(mock, getRecentPrices("ABC"))
 		.WillOnce(Return(vector<int>{1000, 1050, 1100}));
 	EXPECT_CALL(mock, getStockPrice("ABC")).WillOnce(Return(1100));
-	EXPECT_CALL(mock, buyStock("ABC", 1100, 9)).Times(1);
+	EXPECT_CALL(mock, buyStock("ABC", 9, 1100)).Times(1);
 
 	AutoTradingSystem bot(&mock);
 	EXPECT_TRUE(bot.buyNiceTiming("ABC", 10000));
@@ -155,8 +164,6 @@ TEST(AutoTradingBotTest, DoNotBuyOnDownTrend) {
 
 	EXPECT_CALL(mock, getRecentPrices("ABC"))
 		.WillOnce(Return(vector<int>{1100, 1050, 1000}));
-	EXPECT_CALL(mock, getStockPrice("ABC")).WillOnce(Return(1100));
-	EXPECT_CALL(mock, buyStock("ABC", 1100, 9)).Times(1);
 
 	AutoTradingSystem bot(&mock);
 	EXPECT_FALSE(bot.buyNiceTiming("ABC", 10000));
