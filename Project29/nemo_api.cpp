@@ -8,7 +8,7 @@
 #include <windows.h>
 
 class NemoAPI {
-public:
+public: 
 	void certification(std::string ID, std::string pass) {
 		std::cout << "[NEMO]" << ID << " login GOOD\n";
 	}
