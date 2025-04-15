@@ -118,12 +118,12 @@ public:
 		return false;
 	}
 
-	bool sellNiceTiming(std::string stockCode, int price) {
+	bool sellNiceTiming(std::string stockCode, int count) {
 		vector<int> prices = getRecentPrices(stockCode);
 
 		if (prices[2] < prices[1] && prices[1] < prices[0]) {
 			int currentPrice = getStockPrice(stockCode, 0);
-			sellStock(stockCode, 5, currentPrice);
+			sellStock(stockCode, count, currentPrice);
 			return true;
 		}
 
