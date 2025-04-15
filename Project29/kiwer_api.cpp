@@ -8,7 +8,7 @@
 #include <string>
 
 class KiwerAPI {
-public:
+public: 
 	void login(std::string ID, std::string password) {
 		std::cout << ID << " login success\n";
 	}
